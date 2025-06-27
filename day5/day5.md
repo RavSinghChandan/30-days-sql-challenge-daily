@@ -27,13 +27,6 @@ CREATE TABLE employees (
 
 ### 1. ✅ Count of employees per department
 
-```sql
-SELECT d.department_name, COUNT(e.employee_id) AS employee_count
-FROM employees e
-JOIN departments d ON e.department_id = d.department_id
-GROUP BY d.department_name;
-```
-
 ---
 
 ### 2. ✅ Average salary per department
