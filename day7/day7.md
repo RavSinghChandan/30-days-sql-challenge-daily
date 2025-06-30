@@ -110,11 +110,80 @@ INSERT INTO tickets (ticket_id, agent_id, customer_id, status, created_date) VAL
 (4, 4, 3, 'Closed', '2024-01-18');
 ```
 
-## 📌 Questions
+# Day 7: Multi-Level Joins – Top 5 Interview Questions with Answers
 
-1. Employees + Managers (same table)
-2. Orders → Customers → Countries
-3. Tickets → Agents → Teams
-4. Show employee hierarchy (employee, manager, department)
-5. Show order details with customer and country information
-6. Show ticket details with agent and team information 
+## ❓ Question 1: How do you perform a self join to list employees along with their manager's name?
+
+```sql
+SELECT 
+  e.name AS employee_name,
+  m.name AS manager_name,
+  d.department_name
+FROM employees e
+LEFT JOIN employees m ON e.manager_id = m.employee_id
+LEFT JOIN departments d ON e.department_id = d.department_id;
+```
+
+✅ **Explanation**: We join the employees table with itself using `manager_id` to get the manager’s name and then join with `departments` to show the department name.
+
+---
+
+## ❓ Question 2: Write a query to show all orders along with customer names and their country.
+
+```sql
+SELECT 
+  o.order_id,
+  o.total_amount,
+  c.customer_name,
+  cn.country_name
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id
+JOIN countries cn ON c.country_id = cn.country_id;
+```
+
+✅ **Explanation**: This is a classic 3-table join following the foreign key chain: `orders → customers → countries`.
+
+---
+
+## ❓ Question 3: How can you retrieve ticket details with the agent’s name and their team?
+
+```sql
+SELECT 
+  t.ticket_id,
+  t.status,
+  a.agent_name,
+  tm.team_name
+FROM tickets t
+JOIN agents a ON t.agent_id = a.agent_id
+JOIN teams tm ON a.team_id = tm.team_id;
+```
+
+✅ **Explanation**: We use foreign keys to join tickets with agents and agents with teams.
+
+---
+
+## ❓ Question 4: Show each manager and count of employees reporting to them.
+
+```sql
+SELECT 
+  m.name AS manager_name,
+  COUNT(e.employee_id) AS num_of_employees
+FROM employees e
+JOIN employees m ON e.manager_id = m.employee_id
+GROUP BY m.name;
+```
+
+✅ **Explanation**: This uses a self join and aggregation to count how many employees report to each manager.
+
+---
+
+## ❓ Question 5: List customers who have raised tickets and also placed orders.
+
+```sql
+SELECT DISTINCT c.customer_name
+FROM customers c
+JOIN tickets t ON c.customer_id = t.customer_id
+JOIN orders o ON c.customer_id = o.customer_id;
+```
+
+✅ **Explanation**: This identifies customers appearing in both `tickets` and `orders`, implying engagement in both support and purchase activities.
