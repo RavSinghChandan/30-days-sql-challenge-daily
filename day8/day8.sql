@@ -1,33 +1,33 @@
 -- 1. Employees earning above overall average salary
-SELECT name, salary
-FROM employees
-WHERE salary > (SELECT AVG(salary) FROM employees);
+select name, salary
+from Employees where salary > (select avg(salary) from Employees);
+
 
 -- 2. Employees who joined before their department head
-SELECT e.name, e.hire_date, d.department_name, h.hire_date as head_hire_date
-FROM employees e
-JOIN departments d ON e.department_id = d.department_id
-JOIN employees h ON d.head_employee_id = h.employee_id
-WHERE e.hire_date < h.hire_date;
+
+select e.name,e.salary, d.department_name
+from employees e
+join departments d on e.department_id= d.department_id
+join employees h   on d.head_employee_id = h.employee_id
+where h.hire_date > e.hire_date;
 
 -- 3. Departments where no one earns below 40k
-SELECT d.department_name
-FROM departments d
-WHERE NOT EXISTS (
-    SELECT 1 FROM employees e 
-    WHERE e.department_id = d.department_id 
-    AND e.salary < 40000
-);
+select d.department_name, d.department_id
+from departments d
+where not exists
+( select 1
+ from employees e
+ where e.department_id= d.department_id
+and e.salary < 40000);
+
+
 
 -- 4. Find employees with salary higher than the average salary in their department
-SELECT e.name, e.salary, d.department_name
-FROM employees e
-JOIN departments d ON e.department_id = d.department_id
-WHERE e.salary > (
-    SELECT AVG(salary) 
-    FROM employees 
-    WHERE department_id = e.department_id
-);
+select e.name, d.department_name
+from employees e
+left join  departments d on e.department_id= d.department_id
+where e.salary > ( select avg(salary) from employees where department_id = e.department_id);
+
 
 -- 5. Find departments that have more employees than the average department
 SELECT d.department_name, COUNT(e.employee_id) as employee_count
@@ -42,6 +42,7 @@ HAVING COUNT(e.employee_id) > (
         GROUP BY department_id
     ) as dept_counts
 );
+
 
 -- 6. Find employees who earn more than the highest salary in Marketing department
 SELECT name, salary
