@@ -1,63 +1,44 @@
--- 1. Grade employees (A/B/C) by salary slabs
-SELECT 
-    name,
-    salary,
-    CASE 
-        WHEN salary >= 70000 THEN 'A'
-        WHEN salary >= 50000 THEN 'B'
-        ELSE 'C'
-    END as grade
-FROM employees;
 
--- 2. Mark employees as 'New Joiner' if joined in last 90 days else 'Tenured'
-SELECT 
+
+    select name salary,
+    case
+    when salary >= 70000 then 'A'
+    when salary >= 50000 then 'B'
+    else  'C'
+    end
+    as grade
+    from employees;
+
+SELECT
     name,
     hire_date,
-    CASE 
-        WHEN hire_date >= DATE_SUB(CURDATE(), INTERVAL 90 DAY) THEN 'New Joiner'
+    CASE
+        WHEN hire_date >= DATE('now', '-90 days') THEN 'New Joiner'
         ELSE 'Tenured'
-    END as employee_status
+    END AS employee_status
 FROM employees;
 
--- 3. Categorize sales performance based on amount
-SELECT 
-    s.sale_id,
-    e.name,
-    s.amount,
-    CASE 
-        WHEN s.amount >= 20000 THEN 'Excellent'
-        WHEN s.amount >= 15000 THEN 'Good'
-        WHEN s.amount >= 10000 THEN 'Average'
-        ELSE 'Below Average'
-    END as performance_category
-FROM sales s
-JOIN employees e ON s.employee_id = e.employee_id;
+-
 
--- 4. Assign project priority levels using CASE
-SELECT 
-    project_name,
-    status,
-    CASE priority
-        WHEN 'High' THEN 'Urgent - Immediate attention required'
-        WHEN 'Medium' THEN 'Important - Plan accordingly'
-        WHEN 'Low' THEN 'Normal - Handle when possible'
-        ELSE 'Undefined'
-    END as priority_description
-FROM projects;
+select
+case
+when s.amount >=20000 then 'Excellent'
+when s.amount >= 15000 then 'Good'
+when s.amount >= 10000 then 'Average'
+else 'Below average'
+end as performance_category
+from sales s join employees e on s.employee_id = e.employee_id;
 
--- 5. Calculate bonus based on performance rating and tenure
-SELECT 
-    name,
-    salary,
-    performance_rating,
-    DATEDIFF(CURDATE(), hire_date) as days_employed,
-    CASE 
-        WHEN performance_rating >= 4.5 AND DATEDIFF(CURDATE(), hire_date) > 365 THEN salary * 0.15
-        WHEN performance_rating >= 4.0 AND DATEDIFF(CURDATE(), hire_date) > 365 THEN salary * 0.10
-        WHEN performance_rating >= 3.5 THEN salary * 0.05
-        ELSE 0
-    END as bonus_amount
-FROM employees;
+-
+select project_name , status,
+case priority
+when 'High' then 'Urgent'
+when 'Medium' then 'Important'
+when 'Low' then 'Normal'
+else 'Undefined'
+end as priority_description
+from projects;
+
 
 -- 6. Categorize employees by department and salary range
 SELECT 
