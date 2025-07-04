@@ -1,47 +1,45 @@
 -- 1. Find 2nd highest salary in each department
-WITH RankedSalaries AS (
-    SELECT 
-        department_id,
-        salary,
-        ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY salary DESC) as salary_rank
-    FROM employees
-)
-SELECT 
-    d.department_name,
-    rs.salary as second_highest_salary
-FROM RankedSalaries rs
-JOIN departments d ON rs.department_id = d.department_id
-WHERE rs.salary_rank = 2;
+
+
+WITH RankedSalaries as (
+  SELECT department_id, salary, ROW_NUMBER() OVER ( PARTITION BY department_id
+                                                   ORDER BY salary DESC ) as salary_rank from employees )
+
+SELECT d.department_name , rs.salary as second_highest_salary from RankedSalaries rs join departments d on rs.department_id = d.department_id where rs.salary_rank=2;
+
+
+
 
 -- 2. Recursive CTE to find reporting hierarchy of an employee
 WITH RECURSIVE EmployeeHierarchy AS (
     -- Base case: start with employee 101 (CEO)
-    SELECT 
+    SELECT
         employee_id,
         name,
         manager_id,
         0 as level,
-        CAST(name AS CHAR(1000)) as hierarchy_path
+        name as hierarchy_path
     FROM employees
     WHERE employee_id = 101
-    
+
     UNION ALL
-    
+
     -- Recursive case: find all direct reports
-    SELECT 
+    SELECT
         e.employee_id,
         e.name,
         e.manager_id,
         eh.level + 1,
-        CONCAT(eh.hierarchy_path, ' -> ', e.name) as hierarchy_path
+        eh.hierarchy_path || ' -> ' || e.name as hierarchy_path
     FROM employees e
     JOIN EmployeeHierarchy eh ON e.manager_id = eh.employee_id
 )
-SELECT 
+SELECT
     level,
     hierarchy_path
 FROM EmployeeHierarchy
 ORDER BY level, employee_id;
+
 
 -- 3. Find employees with salary above department average using CTE
 WITH DeptAverages AS (
@@ -61,6 +59,7 @@ FROM employees e
 JOIN departments d ON e.department_id = d.department_id
 JOIN DeptAverages da ON e.department_id = da.department_id
 WHERE e.salary > da.avg_salary;
+
 
 -- 4. Calculate running total of salaries by department
 WITH SalaryRunningTotal AS (
@@ -106,6 +105,7 @@ SELECT
 FROM RankedEmployees
 WHERE salary_rank <= 3
 ORDER BY department_name, salary_rank;
+
 
 -- 6. Create a CTE to show employee count and average salary by department
 WITH DeptStats AS (
