@@ -1,46 +1,54 @@
 -- 1. Rank employees by salary within department
-SELECT 
-    name,
-    salary,
-    department_name,
-    RANK() OVER (PARTITION BY e.department_id ORDER BY salary DESC) as salary_rank,
-    DENSE_RANK() OVER (PARTITION BY e.department_id ORDER BY salary DESC) as dense_rank
-FROM employees e
-JOIN departments d ON e.department_id = d.department_id;
+
+
+
+--Brute Force
+    select e1.employee_id, e1.name, d.department_name, e1.salary, count(e2.salary) as salary_rank
+    from employees e1 join employees e2 on e1.department_id = e2.department_id
+    and e2.salary >= e1.salary
+    join departments d on e1.department_id= d.department_id group by
+e1.employee_id, e1.name, d.department_name, e1.salary;
+
+-- window function = rank() over()
+    select e.employee_id,e.name,d.department_name, e.salary,
+    rank() over (
+		 partition by e.department_id
+		order by e.salary desc ) as salary_rank
+    from employees e join departments d
+	on e.department_id = d.department_id;
+
+
+
 
 -- 2. Running total of salaries
-SELECT 
-    name,
-    salary,
-    SUM(salary) OVER (ORDER BY salary DESC) as running_total,
-    SUM(salary) OVER (ORDER BY salary DESC ROWS UNBOUNDED PRECEDING) as cumulative_total
-FROM employees;
+
+
+
+select  e1.employee_id, e1.name, e1.salary , e1.hire_date,
+ ( select sum(e2.salary) from employees e2 where e2.hire_date <= e1.hire_date ) as running_totol
+  from employees e1 order by e1.hire_date;
+
+  -- Optimized
+   select employee_id, name, department_id, salary ,
+  	rank() over( partition by department_id order by salary desc ) as salary ;
+
 
 -- 3. Difference between max salary and each employee's salary
-SELECT 
-    name,
-    salary,
-    department_name,
-    MAX(salary) OVER (PARTITION BY e.department_id) as dept_max_salary,
-    MAX(salary) OVER (PARTITION BY e.department_id) - salary as salary_gap
-FROM employees e
-JOIN departments d ON e.department_id = d.department_id;
+-- Brute Force
+-- 1.select max(salary) from employees;
+--2. select employee_id, name, salary ,(select max(salary) from employees ) as max_salary from employees;
+ --3. select employee_id, name, salary ,(select max(salary) from employees ) - salary as salary_gap from employees;
+
+ -- Optimized
+ --select employee_id, name, salary,max(salary) over() as max_salary from employees;
+ --select employee_id, name, salary,max(salary) over()- salary  as salary_gap from employees;
+
 
 -- 4. Calculate moving average of sales amounts
-SELECT 
-    sale_id,
-    amount,
-    sale_date,
-    AVG(amount) OVER (
-        ORDER BY sale_date 
-        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
-    ) as moving_avg_3_periods,
-    AVG(amount) OVER (
-        ORDER BY sale_date 
-        ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
-    ) as moving_avg_centered
-FROM sales
-ORDER BY sale_date;
+select s1.sale_id, s1.amount, s1.sale_date from sales s1 join sales s2
+on s2.sale_date between date_sub( s1.sale_date, interval 2 day) and s1.sale_date   s1.sale_id, s1.sale_date, s1.amount
+ORDER BY
+  s1.sale_date;
 
 -- 5. Find employees with top 2 salaries in each department
 WITH RankedEmployees AS (
